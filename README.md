@@ -1,4 +1,4 @@
-# Project 4: Collaborative Filtering
+# Project 4: Algorithm implementation and evaluation: Collaborative Filtering
 
 ### [Project Description](doc/project4_desc.md)
 
