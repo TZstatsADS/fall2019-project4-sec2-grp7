@@ -32,7 +32,6 @@ data_test <- data[test_idx,]
 ###Step 2 Matrix Factorization
 #### Step 2.1 Algorithm and Regularization
 Here I perform stochastic gradien descent to do matrix factorization.
-Your algorithm should consider case that there are new users and movies adding to the dataset you used to train. In other words, the dimension your matrix R, q, p is dynamic.
 
 - For algorithms, the referenced paper are:
 
@@ -48,7 +47,7 @@ R1. [Penalty of Magnitudes](./paper/P1 Recommender-Systems.pdf) Section: a Basic
 
 R2. [Bias and Intercepts](./paper/P1 Recommender-Systems.pdf) Section: Adding Biases
 
-R3. [Temporal Dynamics](./paper/P5 Collaborative Filtering with Temporal Dynamics.pdf) Section 4
+R3. [Temporal Dynamics](./paper/P5 Collaborative Filtering with Temporal Dynamics.pdf) Section 4 linear model
 
 
 ```{r}
