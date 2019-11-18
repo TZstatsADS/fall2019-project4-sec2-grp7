@@ -31,11 +31,12 @@ for(i in 1:dim(q)[2]){
 #colnames(s) = ratings$movieId[1:dim(q)[2]]
 #rownames(s) = ratings$movieId[1:dim(q)[2]]
 s
-save(s,file = "/Users/ss/Desktop/s.RData")
+save(s,file = "../output/s.RData")
 ```
 
 
 ```{r}
+load("../output/s.Rdata")
 #3NN
 K = 4
 #1st movie similarity
