@@ -45,94 +45,87 @@ colnames(q) = sort(unique(ratings$movieId))
 
 ```{r}
 #distance matrix given q
-simi <- function(Q){
+simi <- function(Q, diag = 1){
   mag_fron = apply(Q, 2, function(q)return(sqrt(sum(q^2))))
-  return( (t(Q)%*%Q) / (mag_fron%*%t(mag_fron)) )
-}
-#movieId of item i's k nearest neighbors
-svd_knn <- function(NN, i, k){
-  return(colnames(NN)[order(NN[,i], decreasing = T)[2:(1+k)]])
+  simi = (t(Q)%*%Q) / (mag_fron%*%t(mag_fron))
+  diag(simi) = diag
+  return(simi)
 }
 ```
 
 ```{r}
 #distance of items
-NN = simi(q)
+NN = simi(q, 0)
 colnames(NN) = colnames(q)
 rownames(NN) = colnames(q)
 ```
 
 ```{r}
-#data for post regression (1NN)
-k = 1
-reg_data = data_train[,1:3]
-nn = apply(reg_data[2], 1, function(id)return(svd_knn( NN, as.character(id), k)))
-reg_data <- cbind(reg_data, nn)
-head(reg_data)
+#matrix of original predictor PQ
+orig_pred = t(p) %*% q
+knn = matrix(NA, dim(orig_pred)[1], dim(orig_pred)[2])
+colnames(knn) = colnames(q)
+rownames(knn) = colnames(p)
 ```
 
-
 ```{r}
-#average rating for an item among all users
-knn = aggregate(reg_data$rating, list(reg_data$movieId), mean)
-knn.name = knn$Group.1
-knn = knn$x
-names(knn) = knn.name
-#knn regression term
-x1 = knn[as.character(reg_data$movieId)]
-head(x1)
-```
-
-
-```{r}
-#original regression term
-x = rep(NA, dim(reg_data)[1])
-for (i in 1:dim(reg_data)[1]){
-  x[i] = t(p[,reg_data[i,1]]) %*% q[,as.character(reg_data[i,2])]
+#matrix of knn predictor
+#1 min run time
+for(i in 1:dim(p)[2]){
+  nn = data_train[data_train$userId==i,]
+  nn_list = as.character(nn[,2])
+  ri = nn[apply(NN[nn_list,], 2, which.max),3]
+  knn[i,] = ri
 }
-head(x)
 ```
 
 ```{r}
-#regression model
-model_knn = lm(reg_data$rating ~ x + x1)
-#original rmse
-sqrt(mean((reg_data$rating - x)^2))
-#knn rmse
-sqrt(mean((reg_data$rating - predict(model_knn))^2))
-```
-
-```{r}
-test_data = data_test[,1:3]
-nn = apply(test_data[2], 1, function(id)return(svd_knn( NN, as.character(id), k)))
-test_data <- cbind(test_data, nn)
-head(test_data)
-```
-
-
-```{r}
-#knn regression term
-#contains some NA's because some items are not included in the training data
-#We change NA to 0 for regression
-x1_test = knn[as.character(test_data$movieId)]
-noknn = is.na(x1_test)
-x1_test[is.na(x1_test)] = 0
-head(x1_test)
-#original regression term
-x_test = rep(NA, dim(test_data)[1])
-for (i in 1:dim(test_data)[1]){
-  x_test[i] = t(p[,test_data[i,1]]) %*% q[,as.character(test_data[i,2])]
+#regression terms p^tq and knn
+#1 min run time
+user_train = as.character(data_train$userId)
+movie_train = as.character(data_train$movieId)
+x_orig = c()
+x_knn = c()
+for(i in 1:dim(data_train)[1]){
+  x_orig = c(x_orig, orig_pred[user_train[i], movie_train[i]])
+  x_knn = c(x_knn, knn[user_train[i], movie_train[i]])
 }
-head(x_test)
 ```
 
+```{r}
+#regression model:
+#rating ~ p^tq + knn
+reg_knn = lm(data_train$rating ~ x_orig + x_knn)
+reg_knn
+```
 
 ```{r}
-pred = coef(model_knn)[1] + x_test * coef(model_knn)[2] + x1_test * coef(model_knn)[3]
-pred[noknn] = x_test[noknn]
+#training rmse
 #original rmse
-sqrt(mean((data_test$rating - x_test)^2))
-#knn rmse
-sqrt(mean((data_test$rating - pred)^2))
+sqrt(mean((data_train$rating - x_orig)^2))
+#with knn rmse
+sqrt(mean((data_train$rating - predict(reg_knn))^2))
+```
+
+```{r}
+#test
+#1 min run time
+user_test = as.character(data_test$userId)
+movie_test = as.character(data_test$movieId)
+test_x_orig = c()
+test_x_knn = c()
+for(i in 1:dim(data_test)[1]){
+  test_x_orig = c(test_x_orig, orig_pred[user_test[i], movie_test[i]])
+  test_x_knn = c(test_x_knn, knn[user_test[i], movie_test[i]])
+}
+```
+
+```{r}
+#test rmse
+#original rmse
+sqrt(mean((data_test$rating - test_x_orig)^2))
+#with knn rmse
+r_knn = coef(reg_knn)[1] + coef(reg_knn)[2] * test_x_orig + coef(reg_knn)[3] * test_x_knn
+sqrt(mean((data_test$rating - r_knn)^2))
 ```
 
