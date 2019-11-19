@@ -1,0 +1,138 @@
+---
+title: "knn"
+author: "Yang Meng"
+date: "11/14/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#load original data
+#setwd('/Users/mengyang/Documents/GitHub/fall2019-project4-sec2-grp7/doc')
+ratings = read.csv('../data/ml-latest-small/ratings.csv')
+#train-test split
+set.seed(0)
+test_idx <- sample(1:nrow(ratings), round(nrow(ratings)/5, 0))
+train_idx <- setdiff(1:nrow(ratings), test_idx)
+data_train <- ratings[train_idx,]
+data_test <- ratings[test_idx,]
+dim(ratings)
+dim(data_train)
+dim(data_test)
+```
+
+```{r}
+#R version of loading p and q
+load('../output/mat_fac.RData')
+dim(result$p)
+dim(result$q)
+```
+
+```{r}
+#p and q for python
+#can be np.array without column names
+p = result$p
+q = result$q
+colnames(p) = sort(unique(ratings$userId))
+colnames(q) = sort(unique(ratings$movieId))
+```
+
+
+```{r}
+#distance matrix given q
+simi <- function(Q){
+  mag_fron = apply(Q, 2, function(q)return(sqrt(sum(q^2))))
+  return( (t(Q)%*%Q) / (mag_fron%*%t(mag_fron)) )
+}
+#movieId of item i's k nearest neighbors
+svd_knn <- function(NN, i, k){
+  return(colnames(NN)[order(NN[,i], decreasing = T)[2:(1+k)]])
+}
+```
+
+```{r}
+#distance of items
+NN = simi(q)
+colnames(NN) = colnames(q)
+rownames(NN) = colnames(q)
+```
+
+```{r}
+#data for post regression (1NN)
+k = 1
+reg_data = data_train[,1:3]
+nn = apply(reg_data[2], 1, function(id)return(svd_knn( NN, as.character(id), k)))
+reg_data <- cbind(reg_data, nn)
+head(reg_data)
+```
+
+
+```{r}
+#average rating for an item among all users
+knn = aggregate(reg_data$rating, list(reg_data$movieId), mean)
+knn.name = knn$Group.1
+knn = knn$x
+names(knn) = knn.name
+#knn regression term
+x1 = knn[as.character(reg_data$movieId)]
+head(x1)
+```
+
+
+```{r}
+#original regression term
+x = rep(NA, dim(reg_data)[1])
+for (i in 1:dim(reg_data)[1]){
+  x[i] = t(p[,reg_data[i,1]]) %*% q[,as.character(reg_data[i,2])]
+}
+head(x)
+```
+
+```{r}
+#regression model
+model_knn = lm(reg_data$rating ~ x + x1)
+#original rmse
+sqrt(mean((reg_data$rating - x)^2))
+#knn rmse
+sqrt(mean((reg_data$rating - predict(model_knn))^2))
+```
+
+```{r}
+test_data = data_test[,1:3]
+nn = apply(test_data[2], 1, function(id)return(svd_knn( NN, as.character(id), k)))
+test_data <- cbind(test_data, nn)
+head(test_data)
+```
+
+
+```{r}
+#knn regression term
+#contains some NA's because some items are not included in the training data
+#We change NA to 0 for regression
+x1_test = knn[as.character(test_data$movieId)]
+noknn = is.na(x1_test)
+x1_test[is.na(x1_test)] = 0
+head(x1_test)
+#original regression term
+x_test = rep(NA, dim(test_data)[1])
+for (i in 1:dim(test_data)[1]){
+  x_test[i] = t(p[,test_data[i,1]]) %*% q[,as.character(test_data[i,2])]
+}
+head(x_test)
+```
+
+
+```{r}
+pred = coef(model_knn)[1] + x_test * coef(model_knn)[2] + x1_test * coef(model_knn)[3]
+pred[noknn] = x_test[noknn]
+#original rmse
+sqrt(mean((data_test$rating - x_test)^2))
+#knn rmse
+sqrt(mean((data_test$rating - pred)^2))
+```
+
