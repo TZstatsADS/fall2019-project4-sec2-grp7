@@ -5,7 +5,7 @@
 Term: Fall 2019
 
 + Team #7 
-+ Projec title: Lorem ipsum dolor sit amet
++ Projec title: Comparison betweeen KNN and Kernel ridge regression under gradient descent with probabilistic assumptions
 + Team members
 	+ Sim, Young js5134@columbia.edu
 	+ Sohn, Jongyoon js5342@columbia.edu
