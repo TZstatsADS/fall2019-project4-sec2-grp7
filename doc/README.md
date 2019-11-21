@@ -5,7 +5,7 @@ The final deliverables for this project are:
 + PMF_main.pdf (see PMF_main.html for better view)
 + PMF_main.ipynb
 + PMF_model.py
-+ Probabilistic Matrix Factorization.pptx
++ Probabilistic Matrix Factorization.pdf
 
 The model was trained and tested in Google Colab using the same lines of code.
 
