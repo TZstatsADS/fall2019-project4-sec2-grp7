@@ -35,7 +35,7 @@ class PMF():
         preds = np.sum(u_features*v_features, 0)
         return preds
 
-    def fit(self, train_data, validation_data = None):
+    def fit(self, train_data, validation_data = None, test_data = None):
         for element in train_data:
             self.R[int(element[0]-1), int(element[1]-1)] = float(element[2])
         
