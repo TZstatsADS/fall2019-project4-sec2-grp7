@@ -7,15 +7,16 @@ from math import sqrt
 
 class PMF():
     # initialize paprameters
-    def __init__(self, m, n, lambda_u=0.3, lambda_v=0.3, latent_size=10,
-                 lr=0.01, num_iter=2000, stopping_deriv=None, seed=None):
-        self.lambda_u = lambda_u
-        self.lambda_v = lambda_v
+    def __init__(self, m, n, sigma, sigma_u, sigma_v,latent_size=10, lr=0.001, num_iter=2000, seed=None):
+        self.sigma = sigma
+        self.sigma_u = sigma_u
+        self.sigma_v = sigma_v
+        self.lambda_u = sigma**2/sigma_u**2
+        self.lambda_v = sigma**2/sigma_v**2
         self.random_state = RandomState(seed)
         self.latent_size=latent_size
         self.lr = lr
         self.iterations = num_iter
-        self.stopping_deriv = stopping_deriv
         self.R = np.zeros([n,m])
         self.I = None
         self.U = None
@@ -41,13 +42,12 @@ class PMF():
         self.I = copy.deepcopy(self.R)
         self.I[self.I != 0] = 1
 
-        self.U = 0.1*self.random_state.rand(self.latent_size, np.size(self.R, 0))
-        self.V = 0.1*self.random_state.rand(self.latent_size, np.size(self.R, 1))
-
+        self.U = self.random_state.normal(loc=0, scale=self.sigma_u, size=(self.latent_size, np.size(self.R, 0)))
+        self.V = self.random_state.normal(loc=0, scale=self.sigma_v, size=(self.latent_size, np.size(self.R, 1)))
         
         last_validation_rmse = None
-        stop_u = False
-        stop_v = False
+        train_rmse=[]
+        test_rmse=[]
 
         for it in range(self.iterations):
             # derivate of U
@@ -57,45 +57,33 @@ class PMF():
             grads_v = np.dot((self.I*(self.R-np.dot(self.U.T, self.V))).T, -self.U.T).T + self.lambda_v*self.V
 
             # update the parameters
-            if self.stopping_deriv is None:
-                self.U = self.U - self.lr * grads_u
-                self.V = self.V - self.lr * grads_v
-            else:
-                if np.all(abs(grads_u) > self.stopping_deriv):
-                    self.U = self.U - self.lr * grads_u
-                else:
-                    stop_u = True
-
-                if np.all(abs(grads_v) > self.stopping_deriv):
-                    self.V = self.V - self.lr * grads_v
-                else:
-                    stop_v = True
-
-                if stop_u and stop_v:
-                    print('early stopping:{: d}'.format(it))
-                    break
+            self.U = self.U - self.lr * grads_u
+            self.V = self.V - self.lr * grads_v
 
             # training loss
             train_loss = self.loss()
             
             if validation_data is None:
-                if (it%100 == 0):
-                    print('traning iteration:{: d}, loss:{: f}'.format(it, train_loss))
+                train_preds=self.predict(train_data)
+                rmse = sqrt(mean_squared_error(train_data[:,2], train_preds))
+                train_rmse.append(rmse)
+
+                test_preds=self.predict(test_data)
+                rmse = sqrt(mean_squared_error(test_data[:,2], test_preds))
+                test_rmse.append(rmse)
             else:
                 validation_preds = self.predict(validation_data)
                 validation_rmse = sqrt(mean_squared_error(validation_data[:,2], validation_preds))
                 if (it%100 == 0):
-                    print('traning iteration:{: d}, loss:{: f}, validation_rmse:{: f}'.format(it, train_loss, validation_rmse))
+                    print('training iteration:{: d}, loss:{: f}, validation_rmse:{: f}'.format(it, train_loss, validation_rmse))
 
                 if last_validation_rmse and (last_validation_rmse - validation_rmse) <= 0:
                     print('convergence at iterations:{: d}'.format(it))
                     break
                 else:
                     last_validation_rmse = validation_rmse
-        train_preds = self.predict(train_data)
-        train_rmse = sqrt(mean_squared_error(train_data[:,2], train_preds))
         
         if validation_data is None:
-            return self.U, self.V, train_rmse
+            return self.U, self.V, train_rmse, test_rmse
         else:
-            return self.U, self.V, train_rmse, last_validation_rmse
+            return self.U, self.V, last_validation_rmse
