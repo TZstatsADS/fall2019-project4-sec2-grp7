@@ -19,7 +19,7 @@ Term: Fall 2019
 + Jongyoon created slides for presentation (Probabilistic Matrix Factorization.pdf) and worked on parameter tuning.
 + Xin worked on PMF in R (Matrix Factorization1.R) and parameter tuning.
 + Siyu worked on KNN in R (knn other version.Rmd) and parameter tuning.
-+ Yang worked on KNN in R (knn.Rmd), KNN function in python (knn.R) and parameter tuning.
++ Yang worked on KNN in R (knn.Rmd), KNN function for R and python (knn.R) and parameter tuning.
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
