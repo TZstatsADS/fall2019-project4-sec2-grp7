@@ -16,7 +16,7 @@ Term: Fall 2019
 	
 **Contribution statement**: All team members approve our work presented in this GitHub repository including this contributions statement. 
 + Young worked on PMF, KNN, and Kernel Ridge Regression, and the main script in python (PMF_model.py and PMF_main.ipynb).
-+ Jongyoon created slides for presentation and worked on parameter tuning.
++ Jongyoon created slides for presentation (Probabilistic Matrix Factorization.pdf) and worked on parameter tuning.
 + Xin worked on PMF in R (Matrix Factorization1.R) and parameter tuning.
 + Siyu worked on KNN in R (knn other version.Rmd) and parameter tuning.
 + Yang worked on KNN in R (knn.Rmd) and parameter tuning.
