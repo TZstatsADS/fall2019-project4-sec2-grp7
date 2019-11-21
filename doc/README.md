@@ -1,5 +1,5 @@
 # Project 4: Algorithm implementation and evaluation: Collaborative Filtering
-## Doc Folder
+### Doc Folder
 
 The final deliverables for this project are:
 + PMF_main.pdf (see PMF_main.html for better view)
