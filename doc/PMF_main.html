@@ -13148,6 +13148,7 @@ div#notebook {
 <span class="kn">from</span> <span class="nn">math</span> <span class="k">import</span> <span class="n">sqrt</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pylab</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">PMF_model</span>
 <span class="o">%</span><span class="k">matplotlib</span> inline
 </pre></div>
@@ -13435,7 +13436,7 @@ test rmse:1.153616
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[20]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># U=np.load(&#39;U.npy&#39;)</span>
@@ -13450,7 +13451,7 @@ test rmse:1.153616
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Training and testing RMSE by different dimensions of factors and epochs are visualized below.</p>
+<p>Training and testing RMSE by different dimensions of factors and epochs are visualized below. We can see that the gradient descent algorithm is working successfully as RMSE gets lower as we train more epochs. As mentioned above, the different number of features show only slight change in RMSE.</p>
 
 </div>
 </div>
@@ -13555,15 +13556,19 @@ test rmse:1.153616
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[24]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Post processing using K Nearest Neighbors with K=1</span>
 <span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="k">import</span> <span class="n">NearestNeighbors</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="n">model_knn</span> <span class="o">=</span> <span class="n">NearestNeighbors</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="s1">&#39;cosine&#39;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s1">&#39;brute&#39;</span><span class="p">,</span> <span class="n">n_neighbors</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">model_knn</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 <span class="n">dist</span><span class="p">,</span> <span class="n">ind</span> <span class="o">=</span> <span class="n">model_knn</span><span class="o">.</span><span class="n">kneighbors</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">nearest_movie</span> <span class="o">=</span> <span class="n">ind</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span>
+<span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="n">knn_train_time</span> <span class="o">=</span> <span class="n">end</span><span class="o">-</span><span class="n">start</span>
 </pre></div>
 
     </div>
@@ -13578,10 +13583,15 @@ test rmse:1.153616
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Average rating of the nearest neighbor (0 if no ratings)</span>
 <span class="n">movie_rates</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;movieId&#39;</span><span class="p">])[</span><span class="s1">&#39;rating&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 <span class="n">test_nn</span> <span class="o">=</span> <span class="n">nearest_movie</span><span class="p">[</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;movieId&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">train_nn</span> <span class="o">=</span> <span class="n">nearest_movie</span><span class="p">[</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;movieId&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">test</span><span class="p">[</span><span class="s1">&#39;knn_preds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">movie_rates</span><span class="p">[</span><span class="n">test_nn</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="n">train_nn</span> <span class="o">=</span> <span class="n">nearest_movie</span><span class="p">[</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;movieId&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">train</span><span class="p">[</span><span class="s1">&#39;knn_preds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">movie_rates</span><span class="p">[</span><span class="n">train_nn</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+<span class="n">knn_test_time</span> <span class="o">=</span> <span class="n">end</span><span class="o">-</span><span class="n">start</span>
 </pre></div>
 
     </div>
@@ -13591,34 +13601,15 @@ test rmse:1.153616
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[26]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># test and train RMSE of KNN prediction</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;knn_preds&#39;</span><span class="p">]))))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;knn_preds&#39;</span><span class="p">]))))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># compute test and train RMSE of KNN prediction</span>
+<span class="n">knn_test_rmse</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;knn_preds&#39;</span><span class="p">])))</span>
+<span class="n">knn_train_rmse</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;knn_preds&#39;</span><span class="p">])))</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>1.5262818256469137
-1.3493580175869981
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -13641,13 +13632,24 @@ test rmse:1.153616
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">normalize</span>
 <span class="c1"># For user specific ratings</span>
 <span class="n">most_rated</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;movieId&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span> <span class="o">=</span> <span class="s1">&#39;rating&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">krr_test_time</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">krr_train_time</span> <span class="o">=</span> <span class="mi">0</span>
+
 <span class="k">for</span> <span class="n">userId</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">num_users</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
     <span class="c1"># get user specific data</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">user_spec</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;userId&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">userId</span><span class="p">]</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">krr_train_time</span> <span class="o">+=</span> <span class="n">end</span><span class="o">-</span><span class="n">start</span>
+    
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">user_spec_test</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;userId&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">userId</span><span class="p">]</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">krr_test_time</span> <span class="o">+=</span> <span class="n">end</span><span class="o">-</span><span class="n">start</span>
     
     <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">user_spec</span><span class="p">)</span><span class="o">!=</span><span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">user_spec_test</span><span class="p">)</span><span class="o">!=</span><span class="mi">0</span><span class="p">):</span>
         <span class="c1"># use 500 most rated movies if the user rated more than 500 movies</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">user_spec</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">500</span><span class="p">):</span>
             <span class="n">user_spec</span><span class="p">[</span><span class="s1">&#39;num_rates&#39;</span><span class="p">]</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">most_rated</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">user_spec</span><span class="p">[</span><span class="s1">&#39;movieId&#39;</span><span class="p">],</span><span class="s1">&#39;rating&#39;</span><span class="p">])</span>
             <span class="n">user_spec</span><span class="o">=</span><span class="n">user_spec</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;num_rates&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)[:</span><span class="mi">500</span><span class="p">]</span>
@@ -13655,15 +13657,21 @@ test rmse:1.153616
         <span class="c1"># get X and y for Kernel Ridge Regression</span>
         <span class="n">X_train</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">user_spec</span><span class="p">[</span><span class="s1">&#39;movieId&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">y_train</span> <span class="o">=</span> <span class="n">user_spec</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">]</span>
-        <span class="n">X_test</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">user_spec_test</span><span class="p">[</span><span class="s1">&#39;movieId&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># Construct and train model</span>
         <span class="n">model_kr</span> <span class="o">=</span>  <span class="n">KernelRidge</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s1">&#39;rbf&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
         <span class="bp">cls</span> <span class="o">=</span> <span class="n">model_kr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">)</span>
-        <span class="n">y_preds</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-        <span class="n">train_preds</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
-
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">krr_train_time</span> <span class="o">+=</span> <span class="n">end</span><span class="o">-</span><span class="n">start</span>
+        
         <span class="c1"># get predictions</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">X_test</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="n">user_spec_test</span><span class="p">[</span><span class="s1">&#39;movieId&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">y_preds</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">krr_test_time</span> <span class="o">+=</span> <span class="n">end</span><span class="o">-</span><span class="n">start</span>
+        
+        <span class="n">train_preds</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
         <span class="n">test</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">user_spec_test</span><span class="o">.</span><span class="n">index</span><span class="p">),</span><span class="s1">&#39;krr_preds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_preds</span>
         <span class="n">train</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">user_spec</span><span class="o">.</span><span class="n">index</span><span class="p">),</span><span class="s1">&#39;krr_preds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_preds</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">((</span><span class="n">user_spec</span><span class="o">&gt;</span><span class="mi">500</span><span class="p">)):</span> <span class="n">train</span><span class="p">[</span><span class="s1">&#39;krr_preds&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -13676,34 +13684,28 @@ test rmse:1.153616
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[30]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># test and train RMSE of Kerner Ridge Regression prediction</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;krr_preds&#39;</span><span class="p">]))))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;krr_preds&#39;</span><span class="p">]))))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># compute test and train RMSE of Kerner Ridge Regression prediction</span>
+<span class="n">krr_test_rmse</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;krr_preds&#39;</span><span class="p">])))</span>
+<span class="n">krr_train_rmse</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;krr_preds&#39;</span><span class="p">])))</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>0.9329271334055824
-1.385064219328171
-</pre>
 </div>
-</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">comp_time</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;KNN&#39;</span><span class="p">:[</span><span class="n">knn_test_time</span><span class="p">,</span> <span class="n">knn_train_time</span><span class="p">],</span> <span class="s1">&#39;KRR&#39;</span><span class="p">:[</span><span class="n">krr_test_time</span><span class="p">,</span> <span class="n">krr_train_time</span><span class="p">]},</span> <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;test_time&#39;</span><span class="p">,</span> <span class="s1">&#39;train_time&#39;</span><span class="p">])</span>
+</pre></div>
 
+    </div>
 </div>
 </div>
 
@@ -13735,11 +13737,12 @@ test rmse:1.153616
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># betas for linear regression combining PMF and KNN</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">knn_beta1</span><span class="p">,</span> <span class="n">knn_beta2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;beta for knn perdictions:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">knn_beta1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;beta for pmf predictions: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">knn_beta2</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -13756,7 +13759,8 @@ test rmse:1.153616
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>-0.002726992838388865 1.0094466331127983
+<pre>beta for knn perdictions:-0.002726992838388865
+beta for pmf predictions: 1.0094466331127983
 </pre>
 </div>
 </div>
@@ -13767,66 +13771,30 @@ test rmse:1.153616
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[32]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># test rmse of KNN processed results</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># compute test and train rmse of KNN processed results</span>
 <span class="n">test</span><span class="p">[</span><span class="s1">&#39;knn_processed_preds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">knn_beta1</span><span class="o">*</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;knn_preds&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">knn_beta2</span><span class="o">*</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;pmf_preds&#39;</span><span class="p">]</span>
-<span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span> <span class="n">test</span><span class="p">[</span><span class="s1">&#39;knn_processed_preds&#39;</span><span class="p">]))</span>
+<span class="n">pmf_knn_test_rmse</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span> <span class="n">test</span><span class="p">[</span><span class="s1">&#39;knn_processed_preds&#39;</span><span class="p">]))</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>1.1541276068819433
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[33]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># train rmse of KNN processed results</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># compute train rmse of KNN processed results</span>
 <span class="n">train</span><span class="p">[</span><span class="s1">&#39;knn_processed_preds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">knn_beta1</span><span class="o">*</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;knn_preds&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">knn_beta2</span><span class="o">*</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;pmf_preds&#39;</span><span class="p">]</span>
-<span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="s1">&#39;knn_processed_preds&#39;</span><span class="p">]))</span>
+<span class="n">pmf_knn_train_rmse</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="s1">&#39;knn_processed_preds&#39;</span><span class="p">]))</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>0.6987678769303419
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -13857,11 +13825,12 @@ test rmse:1.153616
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># betas for linear regression combining PMF and KRR</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">krr_beta1</span><span class="p">,</span> <span class="n">krr_beta2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;beta for krr perdictions:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">krr_beta1</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;beta for pmf predictions: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">krr_beta2</span><span class="p">))</span>
 </pre></div>
 
     </div>
@@ -13878,7 +13847,8 @@ test rmse:1.153616
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>0.020029670373081978 0.9892725124376046
+<pre>beta for krr perdictions:0.020029670373081978
+beta for pmf predictions: 0.9892725124376046
 </pre>
 </div>
 </div>
@@ -13889,66 +13859,43 @@ test rmse:1.153616
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[35]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># test rmse of KRR processed results</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># compute test rmse of KRR processed results</span>
 <span class="n">test</span><span class="p">[</span><span class="s1">&#39;krr_processed_preds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">krr_beta1</span><span class="o">*</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;krr_preds&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">krr_beta2</span><span class="o">*</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;pmf_preds&#39;</span><span class="p">]</span>
-<span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span> <span class="n">test</span><span class="p">[</span><span class="s1">&#39;krr_processed_preds&#39;</span><span class="p">]))</span>
+<span class="n">pmf_krr_test_rmse</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span> <span class="n">test</span><span class="p">[</span><span class="s1">&#39;krr_processed_preds&#39;</span><span class="p">]))</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>1.1426347248810556
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[36]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># train rmse of KRR processed results</span>
 <span class="n">train</span><span class="p">[</span><span class="s1">&#39;krr_processed_preds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">krr_beta1</span><span class="o">*</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;krr_preds&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">krr_beta2</span><span class="o">*</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;pmf_preds&#39;</span><span class="p">]</span>
-<span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="s1">&#39;krr_processed_preds&#39;</span><span class="p">]))</span>
+<span class="n">pmf_krr_train_rmse</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="s1">&#39;krr_processed_preds&#39;</span><span class="p">]))</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>0.6984023019886008
-</pre>
 </div>
-</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[26]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rmfe_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;PMF&#39;</span><span class="p">:[</span><span class="n">pmf_test_rmse</span><span class="p">,</span> <span class="n">pmf_train_rmse</span><span class="p">],</span> <span class="s1">&#39;KNN&#39;</span><span class="p">:[</span><span class="n">knn_test_rmse</span><span class="p">,</span> <span class="n">knn_train_rmse</span><span class="p">],</span> <span class="s1">&#39;KRR&#39;</span><span class="p">:[</span><span class="n">krr_test_rmse</span><span class="p">,</span> <span class="n">krr_train_rmse</span><span class="p">],</span> <span class="s1">&#39;PMF_KNN&#39;</span><span class="p">:[</span><span class="n">pmf_knn_test_rmse</span><span class="p">,</span> <span class="n">pmf_knn_train_rmse</span><span class="p">],</span> <span class="s1">&#39;PMF_KRR&#39;</span><span class="p">:[</span><span class="n">pmf_krr_test_rmse</span><span class="p">,</span> <span class="n">pmf_krr_train_rmse</span><span class="p">]},</span> <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;test_rmse&#39;</span><span class="p">,</span> <span class="s1">&#39;train_rmse&#39;</span><span class="p">])</span>
+</pre></div>
 
+    </div>
 </div>
 </div>
 
@@ -13966,14 +13913,6 @@ test rmse:1.153616
 </div>
 </div>
 
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>From the results above, we can observe that KRR post-processed results are better off by 0.01 RMSE compared to PMF predictions. On the other hand, KNN post-processed results are similar to PMF (worse off by 0.0005 RMSE). A possible explanation is that we use K=1 so the KNN predictions only depend on a single nearest item. This may have caused noised due to overfitting and have evened out the ensemble effect. Also, we are not given ratings for every movie in the first place, and more movies have been omitted as we set the KNN prediction to 0 for movies without ratings. Accordingly, almost half of the test prediction with KNN was set to 0. KNN may perform better with more data available.</p>
-
-</div>
-</div>
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
@@ -14024,7 +13963,7 @@ test rmse:1.153616
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>The predictions are higher when the actual rating is higher. The betas for KNN predictions and KRR predictions are very small, so knn_processed_preds and krr_processed_preds, which are linear regression of each with PMF predictions, consist mostly of PMF predictions. Accordingly, the box plots for the two are very similar, and knn_processed_preds and krr_processed_preds are highly correlated.</p>
+<p>The predictions are higher when the actual ratings are higher. The betas for KNN predictions and KRR predictions are very small, so knn_processed_preds and krr_processed_preds, which are linear regression of each with PMF predictions, consist mostly of PMF predictions. Accordingly, the box plots for the two are very similar, and knn_processed_preds and krr_processed_preds are highly correlated.</p>
 
 </div>
 </div>
@@ -14095,6 +14034,157 @@ test rmse:1.153616
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[34]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">comp_time</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[34]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>KNN</th>
+      <th>KRR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>test_time</th>
+      <td>0.054995</td>
+      <td>2.551214</td>
+    </tr>
+    <tr>
+      <th>train_time</th>
+      <td>944.052324</td>
+      <td>5.460061</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[37]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">rmse_df</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[37]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>PMF</th>
+      <th>KNN</th>
+      <th>KRR</th>
+      <th>PMF_KNN</th>
+      <th>PMF_KRR</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>test_rmse</th>
+      <td>1.153616</td>
+      <td>1.526282</td>
+      <td>0.932927</td>
+      <td>1.154128</td>
+      <td>1.142635</td>
+    </tr>
+    <tr>
+      <th>train_rmse</th>
+      <td>0.699220</td>
+      <td>1.349358</td>
+      <td>1.385064</td>
+      <td>0.698768</td>
+      <td>0.698402</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>From the results above, we can observe that KRR post-processed results are better off by 0.01 RMSE compared to PMF predictions. The test RMSE for the KRR predictions is lower than train RMSE, indicating that the model may be underfitting and has more room to improve. We used the same parameters as given in the paper for this model, but with parameter tuning we may get better results. On the other hand, KNN post-processed results are similar to PMF (worse off by 0.0005 RMSE). A possible explanation is that we use K=1 so the KNN predictions only depend on a single nearest item. This may have caused noised due to overfitting and have evened out the ensemble effect. Also, we are not given ratings for every movie in the first place, and more movies have been omitted as we set the KNN prediction to 0 for movies without ratings. Accordingly, almost half of the test prediction with KNN was set to 0. KNN may perform better with more data available and/or with larger K.</p>
+
+</div>
+</div>
 </div>
     </div>
   </div>
